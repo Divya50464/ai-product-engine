@@ -7,8 +7,8 @@ spring:
       genai:
         api-key: ${GOOGLE_API_KEY}
         chat:
-          options:
-            model: gemini-2.5-flash
+          model: gemini-2.5-flash
+          response-mime-type: application/json
 
 server:
   port: 8080
