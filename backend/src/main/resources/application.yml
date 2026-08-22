@@ -7,13 +7,14 @@ spring:
       genai:
         api-key: ${GOOGLE_API_KEY}
         chat:
-          model: gemini-3.6-flash
+          options:
+            model: gemini-3.6-flash
           response-mime-type: application/json
 
   datasource:
     url: jdbc:mysql://localhost:3306/product_engine
     username: root
-    password: ${DB_PASSWORD}
+    password: divyalathaprakash@1234
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:

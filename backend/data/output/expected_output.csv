@@ -1,0 +1,5 @@
+fieldName,expectedValue,expectedSource,expectedAuthorityTier
+price,79900.0,Official Apple Store,1
+material,Aluminum,Official Apple Store,1
+dimensions,147.6 x 71.6 x 7.8 mm,Official Apple Store,1
+weight,170.0,Official Apple Store,1

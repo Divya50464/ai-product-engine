@@ -5,7 +5,9 @@ import com.aiproduct.engine.dto.ProductSchemaDTO;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class ProductAssemblyService {
@@ -60,56 +62,147 @@ public class ProductAssemblyService {
 
         ProductSchemaDTO result = new ProductSchemaDTO();
 
+        /*
+         * Stores the complete resolution result for each field.
+         *
+         * Example:
+         * price -> winning value, confidence, source,
+         *          authority tier, rejected value, rejected source
+         */
+        Map<String, FieldResultDTO> fieldResults =
+                new HashMap<>();
+
         result.setName(
                 resolveStringField(
                         "name",
-                        sources
+                        sources,
+                        fieldResults
                 )
         );
 
         result.setCategory(
                 resolveStringField(
                         "category",
-                        sources
+                        sources,
+                        fieldResults
                 )
         );
 
         result.setPrice(
                 resolveDoubleField(
                         "price",
-                        sources
+                        sources,
+                        fieldResults
                 )
         );
 
         result.setMaterial(
                 resolveStringField(
                         "material",
-                        sources
+                        sources,
+                        fieldResults
                 )
         );
 
         result.setDimensions(
                 resolveStringField(
                         "dimensions",
-                        sources
+                        sources,
+                        fieldResults
                 )
         );
 
         result.setWeight(
                 resolveDoubleField(
                         "weight",
-                        sources
+                        sources,
+                        fieldResults
                 )
         );
+
+        result.setManufacturerName(
+                resolveStringField(
+                        "manufacturerName",
+                        sources,
+                        fieldResults
+                )
+        );
+
+        result.setBrandName(
+                resolveStringField(
+                        "brandName",
+                        sources,
+                        fieldResults
+                )
+        );
+
+        result.setManufacturerPartNumber(
+                resolveStringField(
+                        "manufacturerPartNumber",
+                        sources,
+                        fieldResults
+                )
+        );
+
+        result.setShortDescription(
+                resolveStringField(
+                        "shortDescription",
+                        sources,
+                        fieldResults
+                )
+        );
+        if (result.getName() == null || result.getName().isBlank()) {
+    result.setName(result.getShortDescription());
+}
+
+        result.setLongDescription(
+                resolveStringField(
+                        "longDescription",
+                        sources,
+                        fieldResults
+                )
+        );
+
+        result.setWarranty(
+                resolveStringField(
+                        "warranty",
+                        sources,
+                        fieldResults
+                )
+        );
+
+        result.setProductImage(
+                resolveStringField(
+                        "productImage",
+                        sources,
+                        fieldResults
+                )
+        );
+
+        result.setSpecificationSheet(
+                resolveStringField(
+                        "specificationSheet",
+                        sources,
+                        fieldResults
+                )
+        );
+
+        /*
+         * Attach the complete field resolution information
+         * to the final DTO.
+         */
+        result.setFieldResults(fieldResults);
 
         return result;
     }
 
     private String resolveStringField(
             String fieldName,
-            List<ExtractedSource> sources) {
+            List<ExtractedSource> sources,
+            Map<String, FieldResultDTO> fieldResults) {
 
-        List<FieldResultDTO> candidates = new ArrayList<>();
+        List<FieldResultDTO> candidates =
+                new ArrayList<>();
 
         for (ExtractedSource source : sources) {
 
@@ -134,16 +227,30 @@ public class ProductAssemblyService {
             return null;
         }
 
-        return conflictResolverService
-                .resolve(fieldName, candidates)
-                .getValue();
+        FieldResultDTO resolved =
+                conflictResolverService.resolve(
+                        fieldName,
+                        candidates
+                );
+
+        /*
+         * Store complete resolution metadata.
+         */
+        fieldResults.put(
+                fieldName,
+                resolved
+        );
+
+        return resolved.getValue();
     }
 
     private Double resolveDoubleField(
             String fieldName,
-            List<ExtractedSource> sources) {
+            List<ExtractedSource> sources,
+            Map<String, FieldResultDTO> fieldResults) {
 
-        List<FieldResultDTO> candidates = new ArrayList<>();
+        List<FieldResultDTO> candidates =
+                new ArrayList<>();
 
         for (ExtractedSource source : sources) {
 
@@ -168,12 +275,23 @@ public class ProductAssemblyService {
             return null;
         }
 
-        String resolvedValue =
-                conflictResolverService
-                        .resolve(fieldName, candidates)
-                        .getValue();
+        FieldResultDTO resolved =
+                conflictResolverService.resolve(
+                        fieldName,
+                        candidates
+                );
 
-        return Double.valueOf(resolvedValue);
+        /*
+         * Store complete resolution metadata.
+         */
+        fieldResults.put(
+                fieldName,
+                resolved
+        );
+
+        return Double.valueOf(
+                resolved.getValue()
+        );
     }
 
     private FieldResultDTO createCandidate(
@@ -186,7 +304,11 @@ public class ProductAssemblyService {
 
         candidate.setFieldName(fieldName);
         candidate.setValue(value);
-        candidate.setSource(source.source());
+
+        candidate.setSource(
+                source.source()
+        );
+
         candidate.setAuthorityTier(
                 source.authorityTier()
         );
@@ -223,10 +345,43 @@ public class ProductAssemblyService {
             ProductSchemaDTO product) {
 
         return switch (fieldName) {
-            case "name" -> product.getName();
-            case "category" -> product.getCategory();
-            case "material" -> product.getMaterial();
-            case "dimensions" -> product.getDimensions();
+
+            case "name" ->
+                    product.getName();
+
+            case "category" ->
+                    product.getCategory();
+
+            case "material" ->
+                    product.getMaterial();
+
+            case "dimensions" ->
+                    product.getDimensions();
+
+            case "manufacturerName" ->
+                    product.getManufacturerName();
+
+            case "brandName" ->
+                    product.getBrandName();
+
+            case "manufacturerPartNumber" ->
+                    product.getManufacturerPartNumber();
+
+            case "shortDescription" ->
+                    product.getShortDescription();
+
+            case "longDescription" ->
+                    product.getLongDescription();
+
+            case "warranty" ->
+                    product.getWarranty();
+
+            case "productImage" ->
+                    product.getProductImage();
+
+            case "specificationSheet" ->
+                    product.getSpecificationSheet();
+
             default -> null;
         };
     }
@@ -236,8 +391,13 @@ public class ProductAssemblyService {
             ProductSchemaDTO product) {
 
         return switch (fieldName) {
-            case "price" -> product.getPrice();
-            case "weight" -> product.getWeight();
+
+            case "price" ->
+                    product.getPrice();
+
+            case "weight" ->
+                    product.getWeight();
+
             default -> null;
         };
     }
