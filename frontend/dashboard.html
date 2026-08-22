@@ -211,8 +211,8 @@
     <div class="card">
         <h2>Final Product Data</h2>
 
-        <button class="json-button" onclick="showJSON()">
-            View Final JSON
+        <button id="jsonButton" class="json-button" onclick="showJSON()" disabled>
+           Loading Product...
         </button>
 
         <pre id="jsonOutput"></pre>
@@ -221,35 +221,195 @@
 </div>
 
 <script>
+    let productData = null;
+
+    async function loadProduct() {
+
+        const sources = [
+            {
+                source: "Manufacturer PDF",
+                authorityTier: 1,
+                text: "Industrial Pressure Sensor. Category: Pressure Sensor. Price: 100 dollars. Material: Stainless Steel. Weight: 2 kg."
+            },
+            {
+                source: "Website",
+                authorityTier: 2,
+                text: "Industrial Pressure Sensor. Category: Pressure Sensor. Price: 100 dollars. Material: Stainless Steel. Weight: 5 kg."
+            }
+        ];
+
+        try {
+
+            const response = await fetch(
+                "http://localhost:8080/api/products/assemble",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(sources)
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error("Backend returned " + response.status);
+            }
+
+            productData = await response.json();
+
+            displayProduct(productData);
+            const jsonButton =
+            document.getElementById("jsonButton");
+
+            jsonButton.disabled = false;
+            jsonButton.textContent = "View Final JSON";
+
+        } catch (error) {
+
+            console.error("Backend error:", error);
+
+            alert(
+                "Could not connect to Spring Boot backend. " +
+                "Make sure the backend is running on port 8080."
+            );
+        }
+    }
+
+
+    function getField(fieldName) {
+
+        if (!productData || !productData.fields) {
+            return null;
+        }
+
+        return productData.fields.find(
+            field => field.fieldName === fieldName
+        );
+    }
+
+
+    function displayProduct(product) {
+
+        const name = document.querySelector(
+            ".field:nth-child(2) > div:last-child"
+        );
+
+        const category = document.querySelector(
+            ".field:nth-child(3) > div:last-child"
+        );
+
+        const price = document.querySelector(
+            ".field:nth-child(4) > div:last-child"
+        );
+
+        if (name) {
+            name.textContent = product.name || "N/A";
+        }
+
+        if (category) {
+            category.textContent = product.category || "N/A";
+        }
+
+        const priceField = getField("price");
+
+        if (price) {
+            price.textContent =
+                priceField ? "$" + priceField.value : "N/A";
+        }
+
+        updateMaterial();
+        updateWeight();
+        updateConflict();
+    }
+
+
+    function updateMaterial() {
+
+        const field = getField("material");
+
+        if (!field) return;
+
+        const elements = document.querySelectorAll(".confidence");
+
+        if (elements.length > 0) {
+
+            elements[0].textContent =
+                field.value + " — " +
+                Math.round(field.confidence * 100) + "%";
+        }
+    }
+
+
+    function updateWeight() {
+
+        const field = getField("weight");
+
+        if (!field) return;
+
+        const elements = document.querySelectorAll(".confidence");
+
+        if (elements.length > 1) {
+
+            elements[1].textContent =
+                field.value + " kg — " +
+                Math.round(field.confidence * 100) + "%";
+        }
+    }
+
+
+    function updateConflict() {
+
+        const weight = getField("weight");
+
+        if (!weight) return;
+
+        const conflictBox =
+            document.querySelector(".conflict");
+
+        if (!conflictBox) return;
+
+        conflictBox.innerHTML = `
+            <div class="conflict-title">
+                ⚠ Conflict Detected
+            </div>
+
+            <p>
+                <strong>Selected value:</strong>
+                ${weight.value} kg
+            </p>
+
+            <p>
+                <strong>Website value:</strong>
+                ${weight.rejectedValue || "N/A"} kg
+            </p>
+
+            <p>
+                <strong>Website confidence:</strong>
+                31%
+            </p>
+        `;
+    }
+
+
     function showJSON() {
 
-        const productData = {
-            name: "Industrial Pressure Sensor",
-            category: "Pressure Sensor",
-            price: "$100",
-            material: {
-                value: "Stainless Steel",
-                confidence: 96,
-                authorityTier: 1,
-                source: "Manufacturer PDF"
-            },
-            weight: {
-                value: "2 kg",
-                confidence: 92,
-                authorityTier: 1,
-                source: "Manufacturer PDF",
-                rejectedValue: "5 kg",
-                rejectedSource: "Website"
-            }
-        };
-
-        const output = document.getElementById("jsonOutput");
-
-        output.textContent =
-            JSON.stringify(productData, null, 2);
-
-        output.style.display = "block";
+    if (!productData) {
+        alert("Product data is still loading. Please wait.");
+        return;
     }
+
+    const output =
+        document.getElementById("jsonOutput");
+
+    output.textContent =
+        JSON.stringify(productData, null, 2);
+
+    output.style.display = "block";
+}
+
+
+    // Load product when page opens
+    loadProduct();
 </script>
 
 </body>
