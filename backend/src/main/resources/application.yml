@@ -1,0 +1,15 @@
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/ai_product_engine
+    username: root
+    password: a1n2a3g4h5a6HR*
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+  ai:
+    google:
+      genai:
+        api-key: ${GEMINI_API_KEY}
