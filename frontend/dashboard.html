@@ -241,7 +241,7 @@
         try {
 
             const response = await fetch(
-                "http://localhost:8080/api/products/assemble",
+                 "/api/products/assemble",
                 {
                     method: "POST",
                     headers: {
@@ -270,7 +270,7 @@
 
             alert(
                 "Could not connect to Spring Boot backend. " +
-                "Make sure the backend is running on port 8080."
+                "Unable to load product data. Please try again."
             );
         }
     }

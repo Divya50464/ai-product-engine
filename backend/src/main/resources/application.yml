@@ -9,12 +9,12 @@ spring:
         chat:
           options:
             model: gemini-3.6-flash
-          response-mime-type: application/json
+            response-mime-type: application/json
 
   datasource:
-    url: jdbc:mysql://localhost:3306/product_engine
-    username: root
-    password: divyalathaprakash@1234
+    url: ${MYSQL_URL:jdbc:mysql://localhost:3306/product_engine}
+    username: ${MYSQL_USERNAME:root}
+    password: ${MYSQL_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
@@ -27,4 +27,4 @@ spring:
     database-platform: org.hibernate.dialect.MySQLDialect
 
 server:
-  port: 8080
+  port: ${PORT:8080}
