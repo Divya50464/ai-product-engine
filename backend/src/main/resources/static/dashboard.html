@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>AI Product Intelligence</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #f5f7fa;
+            color: #222;
+        }
+
+        header {
+            background: #1f2937;
+            color: white;
+            padding: 20px 40px;
+        }
+
+        header h1 {
+            margin: 0;
+        }
+
+        header p {
+            margin: 5px 0 0;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .card h2 {
+            margin-top: 0;
+        }
+
+        .field {
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px solid #eee;
+            padding: 14px 0;
+        }
+
+        .field:last-child {
+            border-bottom: none;
+        }
+
+        .field-name {
+            font-weight: bold;
+        }
+
+        .confidence {
+            font-weight: bold;
+        }
+
+        .source {
+            font-size: 14px;
+            color: #555;
+            margin-top: 4px;
+        }
+
+        .conflict {
+            background: #fff4e5;
+            border-left: 5px solid #f59e0b;
+            padding: 15px;
+            margin-top: 15px;
+            border-radius: 5px;
+        }
+
+        .conflict-title {
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .reason {
+            background: #eef6ff;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 15px;
+        }
+
+        button {
+            padding: 10px 18px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .json-button {
+            background: #1f2937;
+            color: white;
+        }
+
+        .json-button:hover {
+            background: #374151;
+        }
+
+        #jsonOutput {
+            display: none;
+            margin-top: 15px;
+            background: #111827;
+            color: white;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h1>AI Product Intelligence</h1>
+    <p>Product Analysis Dashboard</p>
+</header>
+
+<div class="container">
+
+    <!-- Product Information -->
+    <div class="card">
+        <h2>Product Information</h2>
+
+        <div class="field">
+            <div>
+                <div class="field-name">Product Name</div>
+            </div>
+            <div>Industrial Pressure Sensor</div>
+        </div>
+
+        <div class="field">
+            <div>
+                <div class="field-name">Category</div>
+            </div>
+            <div>Pressure Sensor</div>
+        </div>
+
+        <div class="field">
+            <div>
+                <div class="field-name">Price</div>
+            </div>
+            <div>$100</div>
+        </div>
+
+        <div class="field">
+            <div>
+                <div class="field-name">Material</div>
+                <div class="source">Tier 1 | Manufacturer PDF</div>
+            </div>
+            <div class="confidence">Stainless Steel — 96%</div>
+        </div>
+
+        <div class="field">
+            <div>
+                <div class="field-name">Weight</div>
+                <div class="source">Tier 1 | Manufacturer PDF</div>
+            </div>
+            <div class="confidence">2 kg — 92%</div>
+        </div>
+    </div>
+
+    <!-- Conflict -->
+    <div class="card">
+        <h2>Conflict Detection</h2>
+
+        <div class="conflict">
+            <div class="conflict-title">⚠ Conflict Detected</div>
+
+            <p>
+                <strong>Selected value:</strong> 2 kg
+            </p>
+
+            <p>
+                <strong>Website value:</strong> 5 kg
+            </p>
+
+            <p>
+                <strong>Website confidence:</strong> 31%
+            </p>
+        </div>
+    </div>
+
+    <!-- Resolution -->
+    <div class="card">
+        <h2>Why Was This Value Selected?</h2>
+
+        <div class="reason">
+            <strong>Higher-authority source.</strong>
+
+            <p>
+                The manufacturer PDF has a higher authority tier
+                than the website source.
+            </p>
+        </div>
+    </div>
+
+    <!-- JSON -->
+    <div class="card">
+        <h2>Final Product Data</h2>
+
+        <button id="jsonButton" class="json-button" onclick="showJSON()" disabled>
+           Loading Product...
+        </button>
+
+        <pre id="jsonOutput"></pre>
+    </div>
+
+</div>
+
+<script>
+    let productData = null;
+
+    async function loadProduct() {
+
+        const sources = [
+            {
+                source: "Manufacturer PDF",
+                authorityTier: 1,
+                text: "Industrial Pressure Sensor. Category: Pressure Sensor. Price: 100 dollars. Material: Stainless Steel. Weight: 2 kg."
+            },
+            {
+                source: "Website",
+                authorityTier: 2,
+                text: "Industrial Pressure Sensor. Category: Pressure Sensor. Price: 100 dollars. Material: Stainless Steel. Weight: 5 kg."
+            }
+        ];
+
+        try {
+
+            const response = await fetch(
+                 "/api/products/assemble",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(sources)
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error("Backend returned " + response.status);
+            }
+
+            productData = await response.json();
+
+            displayProduct(productData);
+            const jsonButton =
+            document.getElementById("jsonButton");
+
+            jsonButton.disabled = false;
+            jsonButton.textContent = "View Final JSON";
+
+        } catch (error) {
+
+            console.error("Backend error:", error);
+
+            alert(
+                "Could not connect to Spring Boot backend. " +
+                "Unable to load product data. Please try again."
+            );
+        }
+    }
+
+
+    function getField(fieldName) {
+
+        if (!productData || !productData.fields) {
+            return null;
+        }
+
+        return productData.fields.find(
+            field => field.fieldName === fieldName
+        );
+    }
+
+
+    function displayProduct(product) {
+
+        const name = document.querySelector(
+            ".field:nth-child(2) > div:last-child"
+        );
+
+        const category = document.querySelector(
+            ".field:nth-child(3) > div:last-child"
+        );
+
+        const price = document.querySelector(
+            ".field:nth-child(4) > div:last-child"
+        );
+
+        if (name) {
+            name.textContent = product.name || "N/A";
+        }
+
+        if (category) {
+            category.textContent = product.category || "N/A";
+        }
+
+        const priceField = getField("price");
+
+        if (price) {
+            price.textContent =
+                priceField ? "$" + priceField.value : "N/A";
+        }
+
+        updateMaterial();
+        updateWeight();
+        updateConflict();
+    }
+
+
+    function updateMaterial() {
+
+        const field = getField("material");
+
+        if (!field) return;
+
+        const elements = document.querySelectorAll(".confidence");
+
+        if (elements.length > 0) {
+
+            elements[0].textContent =
+                field.value + " — " +
+                Math.round(field.confidence * 100) + "%";
+        }
+    }
+
+
+    function updateWeight() {
+
+        const field = getField("weight");
+
+        if (!field) return;
+
+        const elements = document.querySelectorAll(".confidence");
+
+        if (elements.length > 1) {
+
+            elements[1].textContent =
+                field.value + " kg — " +
+                Math.round(field.confidence * 100) + "%";
+        }
+    }
+
+
+   function updateConflict() {
+
+    const weight = getField("weight");
+
+    if (!weight) return;
+
+    const conflictBox =
+        document.querySelector(".conflict");
+
+    if (!conflictBox) return;
+
+    const selectedConfidence =
+        Math.round(weight.confidence * 100);
+
+    conflictBox.innerHTML = `
+        <div class="conflict-title">
+            ⚠ Conflict Detected
+        </div>
+
+        <p>
+            <strong>Selected value:</strong>
+            ${weight.value} kg
+        </p>
+
+        <p>
+            <strong>Rejected value:</strong>
+            ${weight.rejectedValue || "N/A"} kg
+        </p>
+
+        <p>
+            <strong>Selected confidence:</strong>
+            ${selectedConfidence}%
+        </p>
+
+        <p>
+            <strong>Selected source:</strong>
+            ${weight.source || "N/A"}
+        </p>
+
+        <p>
+            <strong>Rejected source:</strong>
+            ${weight.rejectedSource || "N/A"}
+        </p>
+    `;
+}
+
+
+    function showJSON() {
+
+    if (!productData) {
+        alert("Product data is still loading. Please wait.");
+        return;
+    }
+
+    const output =
+        document.getElementById("jsonOutput");
+
+    output.textContent =
+        JSON.stringify(productData, null, 2);
+
+    output.style.display = "block";
+}
+
+
+    // Load product when page opens
+    loadProduct();
+</script>
+
+</body>
+</html>
