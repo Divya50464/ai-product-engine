@@ -241,7 +241,7 @@
         try {
 
             const response = await fetch(
-                 "/api/products/assemble",
+                 "/api/products",
                 {
                     method: "POST",
                     headers: {
@@ -423,9 +423,7 @@
 
     // Load product when page opens
     async function loadProduct() {
-
     try {
-
         const response = await fetch("/api/products");
 
         if (!response.ok) {
@@ -438,19 +436,15 @@
             throw new Error("No products found");
         }
 
-        // API returns an array, so use the first product
         productData = products[0];
 
         displayProduct(productData);
 
-        const jsonButton =
-            document.getElementById("jsonButton");
-
+        const jsonButton = document.getElementById("jsonButton");
         jsonButton.disabled = false;
         jsonButton.textContent = "View Final JSON";
 
     } catch (error) {
-
         console.error("Backend error:", error);
 
         alert(
@@ -458,7 +452,9 @@
             "Unable to load product data. Please try again."
         );
     }
+
 }
+
 </script>
 
 </body>
