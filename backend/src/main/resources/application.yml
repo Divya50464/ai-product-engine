@@ -12,9 +12,9 @@ spring:
             response-mime-type: application/json
 
   datasource:
-    url: ${MYSQL_URL:jdbc:mysql://localhost:3306/product_engine}
-    username: ${MYSQL_USERNAME:root}
-    password: ${MYSQL_PASSWORD}
+    url: jdbc:mysql://${MYSQLHOST}:${MYSQLPORT}/${MYSQLDATABASE}
+    username: ${MYSQLUSER}
+    password: ${MYSQLPASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
