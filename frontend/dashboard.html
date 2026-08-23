@@ -357,38 +357,51 @@
     }
 
 
-    function updateConflict() {
+   function updateConflict() {
 
-        const weight = getField("weight");
+    const weight = getField("weight");
 
-        if (!weight) return;
+    if (!weight) return;
 
-        const conflictBox =
-            document.querySelector(".conflict");
+    const conflictBox =
+        document.querySelector(".conflict");
 
-        if (!conflictBox) return;
+    if (!conflictBox) return;
 
-        conflictBox.innerHTML = `
-            <div class="conflict-title">
-                ⚠ Conflict Detected
-            </div>
+    const selectedConfidence =
+        Math.round(weight.confidence * 100);
 
-            <p>
-                <strong>Selected value:</strong>
-                ${weight.value} kg
-            </p>
+    conflictBox.innerHTML = `
+        <div class="conflict-title">
+            ⚠ Conflict Detected
+        </div>
 
-            <p>
-                <strong>Website value:</strong>
-                ${weight.rejectedValue || "N/A"} kg
-            </p>
+        <p>
+            <strong>Selected value:</strong>
+            ${weight.value} kg
+        </p>
 
-            <p>
-                <strong>Website confidence:</strong>
-                31%
-            </p>
-        `;
-    }
+        <p>
+            <strong>Rejected value:</strong>
+            ${weight.rejectedValue || "N/A"} kg
+        </p>
+
+        <p>
+            <strong>Selected confidence:</strong>
+            ${selectedConfidence}%
+        </p>
+
+        <p>
+            <strong>Selected source:</strong>
+            ${weight.source || "N/A"}
+        </p>
+
+        <p>
+            <strong>Rejected source:</strong>
+            ${weight.rejectedSource || "N/A"}
+        </p>
+    `;
+}
 
 
     function showJSON() {
