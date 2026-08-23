@@ -422,7 +422,43 @@
 
 
     // Load product when page opens
-    loadProduct();
+    async function loadProduct() {
+
+    try {
+
+        const response = await fetch("/api/products");
+
+        if (!response.ok) {
+            throw new Error("Backend returned " + response.status);
+        }
+
+        const products = await response.json();
+
+        if (!products || products.length === 0) {
+            throw new Error("No products found");
+        }
+
+        // API returns an array, so use the first product
+        productData = products[0];
+
+        displayProduct(productData);
+
+        const jsonButton =
+            document.getElementById("jsonButton");
+
+        jsonButton.disabled = false;
+        jsonButton.textContent = "View Final JSON";
+
+    } catch (error) {
+
+        console.error("Backend error:", error);
+
+        alert(
+            "Could not connect to Spring Boot backend. " +
+            "Unable to load product data. Please try again."
+        );
+    }
+}
 </script>
 
 </body>
